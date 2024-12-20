@@ -1,32 +1,47 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}">{% endblock %}
+<!-- Загружаем дополнительные стили для страницы админки -->
+{% block extrastyle %}
+    {{ block.super }}  <!-- Сохраняем существующие стили -->
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">  <!-- Подключаем CSS для панели управления -->
+{% endblock %}
 
-{% block coltype %}colMS{% endblock %}
+{% block coltype %}colMS{% endblock %}  <!-- Устанавливаем тип колонки для макета -->
 
-{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+<!-- Добавляем класс для body -->
+{% block bodyclass %}
+    {{ block.super }} dashboard  <!-- Добавляем класс 'dashboard' к body -->
+{% endblock %}
 
-{% block nav-breadcrumbs %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}  <!-- Блок для хлебных крошек, оставляем пустым -->
 
-{% block nav-sidebar %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}  <!-- Блок для бокового меню, оставляем пустым -->
 
 {% block content %}
 <div id="content-main">
+  <!-- Включаем список приложений админки -->
   {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
 
+  <!-- Модуль для создания нового опроса -->
   <div class="module" id="create-poll-module">
-    <h2>{% translate 'Create a New Poll' %}</h2>
+    <h2>{% translate 'Create a New Poll' %}</h2>  <!-- Заголовок для создания нового опроса -->
     <form method="post" action="{% url 'create_poll' %}">
-      {% csrf_token %}
+      {% csrf_token %}  <!-- Защита от CSRF-атак -->
+
+      <!-- Поле для вопроса опроса -->
       <div class="form-row">
         <label for="poll-question">{% translate 'Poll Question' %}</label>
         <input type="text" id="poll-question" name="question" required>
       </div>
+
+      <!-- Поле для вариантов ответа -->
       <div class="form-row">
         <label for="poll-options">{% translate 'Poll Options' %}</label>
         <textarea id="poll-options" name="options" rows="5" placeholder="{% translate 'Enter each option on a new line' %}" required></textarea>
       </div>
+
+      <!-- Кнопка для отправки формы -->
       <div class="form-row">
         <button type="submit" class="button">{% translate 'Create Poll' %}</button>
       </div>
@@ -36,24 +51,33 @@
 {% endblock %}
 
 {% block sidebar %}
+<!-- Боковая панель с последними действиями -->
 <div id="content-related">
     <div class="module" id="recent-actions-module">
-        <h2>{% translate 'Recent actions' %}</h2>
-        <h3>{% translate 'My actions' %}</h3>
-            {% load log %}
-            {% get_admin_log 10 as admin_log for_user user %}
-            {% if not admin_log %}
-            <p>{% translate 'None available' %}</p>
-            {% else %}
-            <ul class="actionlist">
+        <h2>{% translate 'Recent actions' %}</h2>  <!-- Заголовок "Недавние действия" -->
+        <h3>{% translate 'My actions' %}</h3>  <!-- Подзаголовок "Мои действия" -->
+
+        <!-- Загрузка логов действий администратора -->
+        {% load log %}
+        {% get_admin_log 10 as admin_log for_user user %}
+        
+        <!-- Если действий нет, выводим сообщение -->
+        {% if not admin_log %}
+        <p>{% translate 'None available' %}</p>
+        {% else %}
+        <ul class="actionlist">
             {% for entry in admin_log %}
             <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                <!-- Если действие связано с удалением, отображаем только название объекта -->
                 {% if entry.is_deletion or not entry.get_admin_url %}
                     {{ entry.object_repr }}
                 {% else %}
+                    <!-- Если действие связано с изменением, выводим ссылку на объект -->
                     <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
                 {% endif %}
                 <br>
+
+                <!-- Если у записи есть тип контента, отображаем его -->
                 {% if entry.content_type %}
                     <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
                 {% else %}
@@ -61,8 +85,8 @@
                 {% endif %}
             </li>
             {% endfor %}
-            </ul>
-            {% endif %}
+        </ul>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
